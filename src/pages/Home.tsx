@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
+import { HeroSection } from "@/components/HeroSection";
+import { BrandSlider } from "@/components/BrandSlider";
 import { AiLogosBackground } from "@/components/AiLogosBackground";
 import {
   Accordion,
@@ -124,29 +127,10 @@ export default function Home() {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="mx-auto max-w-3xl px-6 py-20 text-center md:py-32">
-        <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
-          ProofReceipt
-        </h1>
-        <div className="mx-auto mt-6 flex items-center justify-center gap-2 text-muted-foreground">
-          <span className="h-px w-8 bg-border" />
-          <p className="font-heading text-lg text-foreground md:text-xl">
-            Verifiable · Immutable · Private
-          </p>
-          <span className="h-px w-8 bg-border" />
-        </div>
-        <p className="mx-auto mt-8 max-w-2xl text-muted-foreground leading-relaxed">
-          AI answers are easy to generate. They're also easy to edit, fake, or dispute.
-          ProofReceipt creates a cryptographic receipt for any AI output, so anyone can later
-          verify that it hasn't been changed.
-        </p>
-        <p className="mt-6 text-sm text-muted-foreground">
-          No accounts · No wallets · No raw content stored on-chain
-        </p>
-        <Button asChild size="lg" className="mt-10">
-          <Link to="/create">Create a Receipt</Link>
-        </Button>
-      </section>
+      <HeroSection />
+
+      {/* Brand Slider */}
+      <BrandSlider />
 
       {/* What Does This App Do */}
       <section className="border-t bg-muted/30 py-20 md:py-28">
