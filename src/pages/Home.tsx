@@ -265,14 +265,28 @@ export default function Home() {
             Core features
           </h2>
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <Card key={feature.title} className="border-border/50 bg-card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-                <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
-                  <feature.icon className="h-6 w-6 text-primary" />
-                  <h3 className="font-semibold text-foreground">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
-                </CardContent>
-              </Card>
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                viewport={{ once: true }}
+                whileHover={{ scale: 1.02 }}
+                className="group relative rounded-xl p-[1px] bg-gradient-to-br from-border via-transparent to-border hover:from-primary/50 hover:via-primary/20 hover:to-primary/50 transition-all duration-300"
+              >
+                <div className="h-full rounded-xl bg-card p-6 backdrop-blur-sm">
+                  <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                      <feature.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-foreground">{feature.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -285,13 +299,20 @@ export default function Home() {
             Who is this for?
           </h2>
           <ul className="mt-10 space-y-4 max-w-md mx-auto">
-            {audiences.map((audience) => (
-              <li key={audience.text} className="flex items-center gap-4 text-muted-foreground text-left">
+            {audiences.map((audience, index) => (
+              <motion.li
+                key={audience.text}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.4 }}
+                viewport={{ once: true }}
+                className="flex items-center gap-4 text-muted-foreground text-left"
+              >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
                   <audience.icon className="h-5 w-5 text-primary" />
                 </div>
                 <span>{audience.text}</span>
-              </li>
+              </motion.li>
             ))}
           </ul>
         </div>
