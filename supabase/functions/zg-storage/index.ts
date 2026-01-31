@@ -36,6 +36,13 @@ serve(async (req) => {
     const provider = new ethers.JsonRpcProvider(ZG_RPC_URL);
     const signer = new ethers.Wallet(privateKey, provider);
     
+    // Log wallet info for debugging
+    const walletAddress = await signer.getAddress();
+    const balance = await provider.getBalance(walletAddress);
+    console.log('Wallet address:', walletAddress);
+    console.log('Wallet balance (wei):', balance.toString());
+    console.log('Wallet balance (A0GI):', ethers.formatEther(balance));
+    
     // Initialize 0G indexer
     const indexer = new Indexer(ZG_INDEXER_RPC);
 
@@ -70,9 +77,9 @@ serve(async (req) => {
       const rootHash = tree!.rootHash();
       console.log('Root hash:', rootHash);
 
-      // Upload to 0G Storage using the correct API signature
-      // indexer.upload(file, RPC_URL, signer)
-      const [txHash, uploadError] = await indexer.upload(zgFile, ZG_RPC_URL, signer as any);
+      // Upload to 0G Storage
+      // In SDK v0.3.3, the return is [result, error] where result contains txHash
+      const [uploadResult, uploadError] = await indexer.upload(zgFile, ZG_RPC_URL, signer as any);
       
       // Clean up temp file
       await zgFile.close();
@@ -82,6 +89,8 @@ serve(async (req) => {
         throw new Error(`Upload failed: ${uploadError}`);
       }
 
+      // In SDK v0.3.3, uploadResult is the transaction hash string
+      const txHash = typeof uploadResult === 'string' ? uploadResult : uploadResult?.toString();
       console.log('Upload successful, tx:', txHash, 'rootHash:', rootHash);
 
       return new Response(
