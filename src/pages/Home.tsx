@@ -7,6 +7,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { BrandSlider } from "@/components/BrandSlider";
 import { WhatItDoesSection } from "@/components/WhatItDoesSection";
 import { WhyItMattersSection } from "@/components/WhyItMattersSection";
+import { WhoIsThisForSection } from "@/components/WhoIsThisForSection";
 import { AiLogosBackground } from "@/components/AiLogosBackground";
 import {
   Accordion,
@@ -22,10 +23,6 @@ import {
   Wallet,
   Download,
   Lock,
-  GraduationCap,
-  Building2,
-  FlaskConical,
-  Users,
 } from "lucide-react";
 
 const features = [
@@ -61,24 +58,6 @@ const features = [
   },
 ];
 
-const audiences = [
-  {
-    icon: GraduationCap,
-    text: "Students submitting AI-assisted work",
-  },
-  {
-    icon: Building2,
-    text: "Companies validating AI-generated reports",
-  },
-  {
-    icon: FlaskConical,
-    text: "Researchers publishing summaries",
-  },
-  {
-    icon: Users,
-    text: 'Teams resolving "what did the model say?" disputes',
-  },
-];
 
 const faqs = [
   {
@@ -243,30 +222,7 @@ export default function Home() {
       </section>
 
       {/* Who Is This For */}
-      <section className="border-t py-20 md:py-28">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
-            Who is this for?
-          </h2>
-          <ul className="mt-10 space-y-4 max-w-md mx-auto">
-            {audiences.map((audience, index) => (
-              <motion.li
-                key={audience.text}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1, duration: 0.4 }}
-                viewport={{ once: true }}
-                className="flex items-center gap-4 text-muted-foreground text-left"
-              >
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                  <audience.icon className="h-5 w-5 text-primary" />
-                </div>
-                <span>{audience.text}</span>
-              </motion.li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <WhoIsThisForSection />
 
       {/* FAQ Section */}
       <section className="border-t bg-muted/30 py-20 md:py-28">
