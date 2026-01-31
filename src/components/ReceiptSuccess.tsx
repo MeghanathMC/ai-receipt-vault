@@ -115,7 +115,7 @@ export function ReceiptSuccess({ rootHash, receiptHash, txHash, onCreateAnother 
         </div>
 
         <p className="text-xs text-muted-foreground text-center">
-          Only cryptographic proof is stored on-chain. Your AI content never leaves your browser.
+          Only hashes are stored on 0G Storage. The AI output never leaves your browser.
         </p>
 
         <div className="flex flex-col gap-3 sm:flex-row">
