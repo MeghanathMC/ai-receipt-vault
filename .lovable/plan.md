@@ -1,60 +1,100 @@
 
+# UI Improvements for Judge Credibility
 
-# Switch to 0G Mainnet - Implementation Plan
+This plan implements the tiered improvements you outlined to enhance clarity and trust for judges evaluating the AI Output Receipt system.
 
-## Summary
+---
 
-The 0G Testnet indexer nodes are currently experiencing 503 Service Unavailable errors. Since 0G is recommending to use mainnet, we'll update the edge function to use 0G mainnet endpoints instead.
+## Tier 1 - High Priority (15-20 mins)
 
-## Changes Required
+### 1. Clearer Hash Labels
+Update labels in both `ReceiptSuccess.tsx` and `VerifyReceipt.tsx`:
 
-Update the network configuration in `supabase/functions/zg-storage/index.ts`:
+| Current Label | New Label |
+|---------------|-----------|
+| 0G Storage Hash | **0G Storage Root Hash** |
+| Receipt Hash | **Receipt Hash (SHA-256 of prompt + output)** |
+| Transaction | **0G Mainnet Transaction Hash** |
 
-| Setting | Current (Testnet) | New (Mainnet) |
-|---------|-------------------|---------------|
-| RPC URL | `https://evmrpc-testnet.0g.ai` | `https://evmrpc.0g.ai` |
-| Indexer (turbo) | `https://indexer-storage-testnet-turbo.0g.ai` | `https://indexer-storage-turbo.0g.ai` |
-| Indexer (standard) | `https://indexer-storage-testnet-standard.0g.ai` | `https://indexer-storage.0g.ai` |
+**Files:** `src/components/ReceiptSuccess.tsx`, `src/pages/VerifyReceipt.tsx`
 
-## Code Changes
+### 2. Info Icon with Tooltip
+Add an info icon next to "0G Storage Root Hash" with tooltip:
 
-```typescript
-// BEFORE: 0G Galileo Testnet configuration
-const ZG_RPC_URL = "https://evmrpc-testnet.0g.ai";
-const INDEXER_ENDPOINTS = [
-  "https://indexer-storage-testnet-turbo.0g.ai",
-  "https://indexer-storage-testnet-standard.0g.ai"
-];
+> "This hash identifies the immutable receipt stored on 0G Storage mainnet."
 
-// AFTER: 0G Mainnet configuration
-const ZG_RPC_URL = "https://evmrpc.0g.ai";
-const INDEXER_ENDPOINTS = [
-  "https://indexer-storage-turbo.0g.ai",
-  "https://indexer-storage.0g.ai"
-];
+**Files:** `src/components/ReceiptSuccess.tsx`, `src/pages/VerifyReceipt.tsx`
+
+### 3. Receipt Metadata Section
+Add a collapsible "Receipt Metadata" section (collapsed by default) showing:
+- **Model:** gpt-4 / claude / etc
+- **Created at:** formatted timestamp
+- **Hash algorithm:** SHA-256
+- **Network:** 0G Mainnet
+
+**Files:** `src/components/ReceiptSuccess.tsx` (needs model and timestamp passed in), `src/components/ReceiptForm.tsx` (pass additional data)
+
+---
+
+## Tier 2 - Differentiators
+
+### 4. Shareable Verification Link Message
+Below the "Copy Verification Link" button, add:
+
+> "Anyone with this link can independently verify the output."
+
+**Files:** `src/components/ReceiptSuccess.tsx`
+
+### 5. Tamper Failure Explanation
+When verification fails (MODIFIED status), show explanation:
+
+> "The computed hash does not match the immutable proof stored on 0G."
+
+**Files:** `src/pages/VerifyReceipt.tsx`
+
+---
+
+## Tier 3 - Optional Impressive Feature
+
+### 6. Raw Proof JSON Modal
+Add a "View Stored Proof" button that opens a dialog showing the formatted JSON:
+
+```json
+{
+  "version": "1.0",
+  "receiptHash": "...",
+  "promptHash": "...",
+  "outputHash": "...",
+  "timestamp": "...",
+  "model": "..."
+}
 ```
 
-## Important Note
+**Files:** `src/pages/VerifyReceipt.tsx`
 
-**Wallet Funding**: Your existing wallet (`0x8F7C37036C175A54eb4F94413A2a5b905369e075`) that has testnet A0GI tokens will need **mainnet A0GI tokens** to pay for storage fees. 
+---
 
-Mainnet tokens are real tokens with actual value, so you'll need to:
-1. Acquire mainnet A0GI tokens (via exchange or bridge)
-2. Send them to your wallet address
+## Technical Details
 
-The storage fee is approximately 0.00003 A0GI per upload, so even a small amount will cover many operations.
+### Props Changes
+The `ReceiptSuccess` component needs additional props for metadata display:
+```typescript
+interface ReceiptSuccessProps {
+  rootHash: string;
+  receiptHash: string;
+  txHash: string;
+  model: string;      // NEW
+  timestamp: string;  // NEW
+  onCreateAnother: () => void;
+}
+```
 
-## Files to Modify
+### New Components Used
+- `Collapsible` from `@radix-ui/react-collapsible` (already installed)
+- `Dialog` components (already available)
+- `Info` icon from lucide-react (already imported)
 
-| File | Changes |
-|------|---------|
-| `supabase/functions/zg-storage/index.ts` | Update RPC and indexer URLs to mainnet |
-
-## Testing Plan
-
-After implementation:
-1. Verify wallet has mainnet A0GI tokens
-2. Create a test receipt
-3. Confirm successful upload with valid `rootHash` and `txHash`
-4. Test downloading the proof using the returned `rootHash`
-
+### Files to Modify
+1. `src/components/ReceiptSuccess.tsx` - Labels, tooltips, metadata section, shareable link message
+2. `src/components/ReceiptForm.tsx` - Pass model and timestamp to ReceiptSuccess
+3. `src/pages/VerifyReceipt.tsx` - Labels, tooltips, failure explanation, raw proof modal
