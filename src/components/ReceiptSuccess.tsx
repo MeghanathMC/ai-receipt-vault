@@ -3,17 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { truncateHash } from "@/lib/hash";
-import { Check, Copy, ExternalLink, Plus } from "lucide-react";
+import { Check, Copy, ExternalLink, Plus, Database } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ReceiptSuccessProps {
-  id: string;
-  hash: string;
+  rootHash: string;
+  receiptHash: string;
+  txHash: string;
   onCreateAnother: () => void;
 }
 
-export function ReceiptSuccess({ id, hash, onCreateAnother }: ReceiptSuccessProps) {
-  const verificationUrl = `${window.location.origin}/verify/${id}`;
+export function ReceiptSuccess({ rootHash, receiptHash, txHash, onCreateAnother }: ReceiptSuccessProps) {
+  const verificationUrl = `${window.location.origin}/verify/${rootHash}`;
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -40,21 +41,33 @@ export function ReceiptSuccess({ id, hash, onCreateAnother }: ReceiptSuccessProp
           </div>
           <div>
             <CardTitle>Receipt Created!</CardTitle>
-            <CardDescription>Your AI output has been recorded and can be verified.</CardDescription>
+            <CardDescription>Your AI output proof has been stored on 0G decentralized storage.</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Receipt ID</span>
             <div className="flex items-center gap-2">
-              <code className="rounded bg-muted px-2 py-1 font-mono text-sm">{id.slice(0, 8)}...</code>
+              <Database className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">0G Storage Hash</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <code className="cursor-help rounded bg-muted px-2 py-1 font-mono text-sm">
+                    {truncateHash(rootHash)}
+                  </code>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs break-all font-mono text-xs">
+                  {rootHash}
+                </TooltipContent>
+              </Tooltip>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                onClick={() => copyToClipboard(id, "Receipt ID")}
+                onClick={() => copyToClipboard(rootHash, "0G Storage Hash")}
               >
                 <Copy className="h-4 w-4" />
               </Button>
@@ -62,29 +75,48 @@ export function ReceiptSuccess({ id, hash, onCreateAnother }: ReceiptSuccessProp
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">Stored Hash</span>
+            <span className="text-sm font-medium text-muted-foreground">Receipt Hash</span>
             <div className="flex items-center gap-2">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <code className="cursor-help rounded bg-muted px-2 py-1 font-mono text-sm">
-                    {truncateHash(hash)}
+                    {truncateHash(receiptHash)}
                   </code>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-xs break-all font-mono text-xs">
-                  {hash}
+                  {receiptHash}
                 </TooltipContent>
               </Tooltip>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                onClick={() => copyToClipboard(hash, "Hash")}
+                onClick={() => copyToClipboard(receiptHash, "Receipt Hash")}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">Transaction</span>
+            <div className="flex items-center gap-2">
+              <code className="rounded bg-muted px-2 py-1 font-mono text-sm">{truncateHash(txHash)}</code>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => copyToClipboard(txHash, "Transaction Hash")}
               >
                 <Copy className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </div>
+
+        <p className="text-xs text-muted-foreground text-center">
+          Only cryptographic proof is stored on-chain. Your AI content never leaves your browser.
+        </p>
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button className="flex-1" onClick={() => copyToClipboard(verificationUrl, "Verification link")}>
@@ -92,7 +124,7 @@ export function ReceiptSuccess({ id, hash, onCreateAnother }: ReceiptSuccessProp
             Copy Verification Link
           </Button>
           <Button variant="outline" className="flex-1" asChild>
-            <Link to={`/verify/${id}`}>
+            <Link to={`/verify/${rootHash}`}>
               <ExternalLink className="mr-2 h-4 w-4" />
               Open Verification Page
             </Link>

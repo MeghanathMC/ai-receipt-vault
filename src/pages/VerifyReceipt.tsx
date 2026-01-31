@@ -6,78 +6,60 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { supabase } from "@/integrations/supabase/client";
-import { computeReceiptHash, truncateHash } from "@/lib/hash";
-import { AlertCircle, CheckCircle2, XCircle, Shield, Copy, ArrowLeft, Info } from "lucide-react";
+import { fetchProofFromZG } from "@/lib/zgStorage";
+import { computeReceiptHash, truncateHash, type ProofJson } from "@/lib/hash";
+import { AlertCircle, CheckCircle2, XCircle, Shield, Copy, ArrowLeft, Info, Database } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-
-interface Receipt {
-  id: string;
-  prompt: string;
-  model: string;
-  output: string;
-  timestamp: string;
-  hash: string;
-  created_at: string;
-}
 
 type VerificationStatus = "idle" | "verified" | "modified";
 
 export default function VerifyReceipt() {
-  const { id } = useParams<{ id: string }>();
-  const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const { id: rootHash } = useParams<{ id: string }>();
+  const [proof, setProof] = useState<ProofJson | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // User inputs for verification
+  const [userPrompt, setUserPrompt] = useState("");
+  const [userOutput, setUserOutput] = useState("");
+  
   const [simulateTamper, setSimulateTamper] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>("idle");
   const [recomputedHash, setRecomputedHash] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchReceipt() {
-      if (!id) {
-        setError("No receipt ID provided");
+    async function fetchProof() {
+      if (!rootHash) {
+        setError("No storage hash provided");
         setLoading(false);
         return;
       }
 
       try {
-        const { data, error: fetchError } = await supabase
-          .from("receipts")
-          .select("*")
-          .eq("id", id)
-          .single();
-
-        if (fetchError) {
-          if (fetchError.code === "PGRST116") {
-            setError("Receipt not found");
-          } else {
-            throw fetchError;
-          }
-        } else {
-          setReceipt(data);
-        }
+        const proofData = await fetchProofFromZG(rootHash);
+        setProof(proofData);
       } catch (err) {
-        console.error("Error fetching receipt:", err);
-        setError("Failed to load receipt");
+        console.error("Error fetching proof:", err);
+        setError(err instanceof Error ? err.message : "Failed to load proof from 0G Storage");
       } finally {
         setLoading(false);
       }
     }
 
-    fetchReceipt();
-  }, [id]);
+    fetchProof();
+  }, [rootHash]);
 
   const handleVerify = async () => {
-    if (!receipt) return;
+    if (!proof) return;
 
-    const outputToHash = simulateTamper ? `${receipt.output} (edited)` : receipt.output;
-    const hash = await computeReceiptHash(receipt.prompt, receipt.model, outputToHash, receipt.timestamp);
+    const outputToHash = simulateTamper ? `${userOutput} (edited)` : userOutput;
+    const hash = await computeReceiptHash(userPrompt, proof.model, outputToHash, proof.timestamp);
     setRecomputedHash(hash);
 
-    if (hash === receipt.hash) {
+    if (hash === proof.receipt_hash) {
       setVerificationStatus("verified");
     } else {
       setVerificationStatus("modified");
@@ -141,7 +123,7 @@ export default function VerifyReceipt() {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
                 <AlertCircle className="h-6 w-6 text-destructive" />
               </div>
-              <CardTitle>Receipt Not Found</CardTitle>
+              <CardTitle>Proof Not Found</CardTitle>
               <CardDescription>{error}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -158,62 +140,94 @@ export default function VerifyReceipt() {
     );
   }
 
-  if (!receipt) return null;
+  if (!proof) return null;
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <main className="mx-auto max-w-4xl px-4 py-8 space-y-6">
-        {/* Receipt Details */}
+        {/* Proof Details from 0G Storage */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Receipt Details
+              <Database className="h-5 w-5 text-primary" />
+              Proof from 0G Storage
             </CardTitle>
-            <CardDescription>ID: {receipt.id}</CardDescription>
+            <CardDescription>Cryptographic proof stored on decentralized storage</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
+                <Label className="text-muted-foreground">Storage Hash</Label>
+                <div className="flex items-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <code className="cursor-help font-mono text-sm">{truncateHash(rootHash || "")}</code>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs break-all font-mono text-xs">
+                      {rootHash}
+                    </TooltipContent>
+                  </Tooltip>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(rootHash || "", "Storage Hash")}>
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-muted-foreground">Version</Label>
+                <p className="font-medium">{proof.version}</p>
+              </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
                 <Label className="text-muted-foreground">Model</Label>
-                <p className="font-medium">{receipt.model}</p>
+                <p className="font-medium">{proof.model}</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-muted-foreground">Timestamp</Label>
-                <p className="font-medium">{formatTimestamp(receipt.timestamp)}</p>
+                <p className="font-medium">{formatTimestamp(proof.timestamp)}</p>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">Prompt</Label>
-              <ScrollArea className="h-32 rounded-md border bg-muted/30 p-3">
-                <pre className="whitespace-pre-wrap font-mono text-sm">{receipt.prompt}</pre>
-              </ScrollArea>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-muted-foreground">AI Output</Label>
-              <ScrollArea className="h-48 rounded-md border bg-muted/30 p-3">
-                <pre className="whitespace-pre-wrap font-mono text-sm">{receipt.output}</pre>
-              </ScrollArea>
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
-              <div className="space-y-1">
-                <Label className="text-muted-foreground">Stored Hash (SHA-256)</Label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <code className="block cursor-help font-mono text-sm">{truncateHash(receipt.hash)}</code>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-xs break-all font-mono text-xs">
-                    {receipt.hash}
-                  </TooltipContent>
-                </Tooltip>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground">Receipt Hash (SHA-256)</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <code className="block cursor-help font-mono text-sm">{truncateHash(proof.receipt_hash)}</code>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs break-all font-mono text-xs">
+                      {proof.receipt_hash}
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(proof.receipt_hash, "Receipt Hash")}>
+                  <Copy className="h-4 w-4" />
+                </Button>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => copyToClipboard(receipt.hash, "Hash")}>
-                <Copy className="h-4 w-4" />
-              </Button>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Prompt Hash</Label>
+                    <code className="block font-mono text-xs">{truncateHash(proof.prompt_hash)}</code>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard(proof.prompt_hash, "Prompt Hash")}>
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
+                  <div className="space-y-1">
+                    <Label className="text-muted-foreground">Output Hash</Label>
+                    <code className="block font-mono text-xs">{truncateHash(proof.output_hash)}</code>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyToClipboard(proof.output_hash, "Output Hash")}>
+                    <Copy className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -221,12 +235,46 @@ export default function VerifyReceipt() {
         {/* Integrity Check */}
         <Card>
           <CardHeader>
-            <CardTitle>Integrity Check</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Integrity Check
+            </CardTitle>
             <CardDescription>
-              Verify that the stored data hasn't been modified by recomputing the hash.
+              Enter the original prompt and output to verify they match the stored proof.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="userPrompt">Original Prompt</Label>
+                <Textarea
+                  id="userPrompt"
+                  placeholder="Paste the original prompt here..."
+                  className="min-h-[100px] resize-y"
+                  value={userPrompt}
+                  onChange={(e) => {
+                    setUserPrompt(e.target.value);
+                    setVerificationStatus("idle");
+                    setRecomputedHash(null);
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="userOutput">Original AI Output</Label>
+                <Textarea
+                  id="userOutput"
+                  placeholder="Paste the original AI output here..."
+                  className="min-h-[150px] resize-y"
+                  value={userOutput}
+                  onChange={(e) => {
+                    setUserOutput(e.target.value);
+                    setVerificationStatus("idle");
+                    setRecomputedHash(null);
+                  }}
+                />
+              </div>
+            </div>
+
             <div className="flex items-center justify-between rounded-lg border p-4">
               <div className="flex items-center gap-3">
                 <Switch
@@ -257,7 +305,12 @@ export default function VerifyReceipt() {
               </Tooltip>
             </div>
 
-            <Button onClick={handleVerify} className="w-full" size="lg">
+            <Button 
+              onClick={handleVerify} 
+              className="w-full" 
+              size="lg"
+              disabled={!userPrompt || !userOutput}
+            >
               <Shield className="mr-2 h-4 w-4" />
               Verify Integrity
             </Button>
@@ -293,8 +346,8 @@ export default function VerifyReceipt() {
                     </Tooltip>
                     <p className="text-xs text-muted-foreground">
                       {verificationStatus === "verified"
-                        ? "✓ Matches stored hash"
-                        : "✗ Does not match stored hash"}
+                        ? "✓ Matches stored receipt hash"
+                        : "✗ Does not match stored receipt hash"}
                     </p>
                   </div>
                 )}
