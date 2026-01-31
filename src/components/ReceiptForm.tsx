@@ -25,6 +25,8 @@ interface CreatedReceipt {
   rootHash: string;
   receiptHash: string;
   txHash: string;
+  model: string;
+  timestamp: string;
 }
 
 export function ReceiptForm() {
@@ -54,7 +56,9 @@ export function ReceiptForm() {
       setCreatedReceipt({ 
         rootHash, 
         receiptHash: proof.receipt_hash,
-        txHash 
+        txHash,
+        model: values.model,
+        timestamp,
       });
       
       toast({
@@ -84,6 +88,8 @@ export function ReceiptForm() {
         rootHash={createdReceipt.rootHash} 
         receiptHash={createdReceipt.receiptHash}
         txHash={createdReceipt.txHash}
+        model={createdReceipt.model}
+        timestamp={createdReceipt.timestamp}
         onCreateAnother={handleReset} 
       />
     );

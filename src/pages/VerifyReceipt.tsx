@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { fetchProofFromZG } from "@/lib/zgStorage";
 import { computeReceiptHash, truncateHash, type ProofJson } from "@/lib/hash";
-import { AlertCircle, CheckCircle2, XCircle, Shield, Copy, ArrowLeft, Info, Database } from "lucide-react";
+import { AlertCircle, CheckCircle2, XCircle, Shield, Copy, ArrowLeft, Info, Database, FileJson } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 type VerificationStatus = "idle" | "verified" | "modified";
@@ -142,6 +143,15 @@ export default function VerifyReceipt() {
 
   if (!proof) return null;
 
+  const rawProofJson = {
+    version: proof.version,
+    receipt_hash: proof.receipt_hash,
+    prompt_hash: proof.prompt_hash,
+    output_hash: proof.output_hash,
+    timestamp: proof.timestamp,
+    model: proof.model,
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -158,7 +168,17 @@ export default function VerifyReceipt() {
           <CardContent className="space-y-6">
             <div className="grid gap-6 md:grid-cols-2">
               <div className="space-y-2">
-                <Label className="text-muted-foreground">Storage Hash</Label>
+                <div className="flex items-center gap-2">
+                  <Label className="text-muted-foreground">0G Storage Root Hash</Label>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      This hash identifies the immutable receipt stored on 0G Storage mainnet.
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
                 <div className="flex items-center gap-2">
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -168,7 +188,7 @@ export default function VerifyReceipt() {
                       {rootHash}
                     </TooltipContent>
                   </Tooltip>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(rootHash || "", "Storage Hash")}>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copyToClipboard(rootHash || "", "0G Storage Root Hash")}>
                     <Copy className="h-3 w-3" />
                   </Button>
                 </div>
@@ -193,7 +213,7 @@ export default function VerifyReceipt() {
             <div className="space-y-4">
               <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground">Receipt Hash (SHA-256)</Label>
+                  <Label className="text-muted-foreground">Receipt Hash (SHA-256 of prompt + output)</Label>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <code className="block cursor-help font-mono text-sm">{truncateHash(proof.receipt_hash)}</code>
@@ -229,6 +249,37 @@ export default function VerifyReceipt() {
                 </div>
               </div>
             </div>
+
+            {/* View Stored Proof Modal */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  <FileJson className="mr-2 h-4 w-4" />
+                  View Stored Proof
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Raw Proof JSON</DialogTitle>
+                  <DialogDescription>
+                    This is the cryptographic proof stored immutably on 0G Storage mainnet.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="relative">
+                  <pre className="overflow-auto rounded-lg bg-muted p-4 font-mono text-sm max-h-[400px]">
+                    {JSON.stringify(rawProofJson, null, 2)}
+                  </pre>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8"
+                    onClick={() => copyToClipboard(JSON.stringify(rawProofJson, null, 2), "Proof JSON")}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 
@@ -317,17 +368,22 @@ export default function VerifyReceipt() {
 
             {verificationStatus !== "idle" && (
               <div className="space-y-4">
-                <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-2">
                   {verificationStatus === "verified" ? (
                     <Badge variant="success" className="gap-2 px-6 py-3 text-lg">
                       <CheckCircle2 className="h-5 w-5" />
                       VERIFIED
                     </Badge>
                   ) : (
-                    <Badge variant="destructive" className="gap-2 px-6 py-3 text-lg">
-                      <XCircle className="h-5 w-5" />
-                      MODIFIED
-                    </Badge>
+                    <>
+                      <Badge variant="destructive" className="gap-2 px-6 py-3 text-lg">
+                        <XCircle className="h-5 w-5" />
+                        MODIFIED
+                      </Badge>
+                      <p className="text-sm text-destructive text-center mt-2">
+                        The computed hash does not match the immutable proof stored on 0G.
+                      </p>
+                    </>
                   )}
                 </div>
 
