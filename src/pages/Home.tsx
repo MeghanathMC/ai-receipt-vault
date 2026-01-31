@@ -6,6 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { BrandSlider } from "@/components/BrandSlider";
 import { WhatItDoesSection } from "@/components/WhatItDoesSection";
+import { WhyItMattersSection } from "@/components/WhyItMattersSection";
 import { AiLogosBackground } from "@/components/AiLogosBackground";
 import {
   Accordion,
@@ -179,35 +180,7 @@ export default function Home() {
       </section>
 
       {/* Why This Matters */}
-      <section className="border-t bg-muted/30 py-20 md:py-28">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
-            Why this matters
-          </h2>
-          <div className="mt-10 grid gap-8 md:grid-cols-2 text-left max-w-2xl mx-auto">
-            <div>
-              <p className="font-medium text-foreground mb-3">AI is already used for:</p>
-              <ul className="ml-6 list-disc space-y-1.5 text-muted-foreground text-sm">
-                <li>Assignments</li>
-                <li>Reports</li>
-                <li>Research summaries</li>
-                <li>Internal documents</li>
-              </ul>
-            </div>
-            <div>
-              <p className="font-medium text-foreground mb-3">But today there's no way to prove:</p>
-              <ul className="ml-6 list-disc space-y-1.5 text-muted-foreground text-sm">
-                <li>What the AI originally said</li>
-                <li>When it was generated</li>
-                <li>Whether it was edited later</li>
-              </ul>
-            </div>
-          </div>
-          <p className="mt-10 font-medium text-foreground text-lg">
-            ProofReceipt solves this by giving AI outputs a verifiable history.
-          </p>
-        </div>
-      </section>
+      <WhyItMattersSection />
 
       {/* Privacy-First */}
       <section className="border-t py-20 md:py-28">
