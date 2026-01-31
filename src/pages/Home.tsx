@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
+import { AiLogosBackground } from "@/components/AiLogosBackground";
 import {
   Accordion,
   AccordionContent,
@@ -334,8 +335,9 @@ export default function Home() {
       </section>
 
       {/* Closing */}
-      <section className="border-t py-20 md:py-28">
-        <div className="mx-auto max-w-3xl px-6 text-center">
+      <section className="relative border-t py-20 md:py-28 overflow-hidden">
+        <AiLogosBackground />
+        <div className="relative z-10 mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
             Proof, not trust.
           </h2>
