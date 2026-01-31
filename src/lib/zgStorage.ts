@@ -33,6 +33,10 @@ export async function uploadProofToZG(proof: ProofJson): Promise<{ rootHash: str
  * Fetches a proof JSON from 0G Storage via edge function
  */
 export async function fetchProofFromZG(rootHash: string): Promise<ProofJson> {
+  if (!rootHash || rootHash.startsWith(":")) {
+    throw new Error("Invalid 0G Storage root hash.");
+  }
+
   const response = await fetch(`${SUPABASE_URL}/functions/v1/zg-storage?rootHash=${encodeURIComponent(rootHash)}`, {
     method: 'GET',
     headers: {

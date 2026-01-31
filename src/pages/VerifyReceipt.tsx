@@ -39,6 +39,16 @@ export default function VerifyReceipt() {
         return;
       }
 
+      // Guard against users landing on the literal route template (/verify/:id)
+      // which would otherwise call the backend with rootHash=":id".
+      if (rootHash.startsWith(":")) {
+        setError(
+          "Invalid verification link. Please open a verification URL that ends with the 0G Storage Root Hash (for example, one you copied from the receipt screen).",
+        );
+        setLoading(false);
+        return;
+      }
+
       try {
         const proofData = await fetchProofFromZG(rootHash);
         setProof(proofData);
