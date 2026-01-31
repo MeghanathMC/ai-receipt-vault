@@ -7,6 +7,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { BrandSlider } from "@/components/BrandSlider";
 import { WhatItDoesSection } from "@/components/WhatItDoesSection";
 import { WhyItMattersSection } from "@/components/WhyItMattersSection";
+import { PrivacySection } from "@/components/PrivacySection";
 import { WhoIsThisForSection } from "@/components/WhoIsThisForSection";
 import { AiLogosBackground } from "@/components/AiLogosBackground";
 import {
@@ -22,7 +23,6 @@ import {
   Database,
   Wallet,
   Download,
-  Lock,
 } from "lucide-react";
 
 const features = [
@@ -161,31 +161,8 @@ export default function Home() {
       {/* Why This Matters */}
       <WhyItMattersSection />
 
-      {/* Privacy-First */}
-      <section className="border-t py-20 md:py-28">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <div className="flex items-center justify-center gap-3">
-            <Lock className="h-6 w-6 text-primary" />
-            <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
-              Privacy-first by design
-            </h2>
-          </div>
-          <div className="mt-10 max-w-xl mx-auto text-left">
-            <p className="text-muted-foreground mb-4">ProofReceipt never stores:</p>
-            <ul className="ml-6 list-disc space-y-1.5 text-muted-foreground">
-              <li>The full AI prompt</li>
-              <li>The output text</li>
-              <li>Any personal or sensitive data</li>
-            </ul>
-            <p className="mt-8 text-muted-foreground">
-              Only cryptographic hashes are written to 0G Storage.
-            </p>
-            <p className="font-medium text-foreground mt-2">
-              This allows verification without exposing content.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* Privacy-First with Globe */}
+      <PrivacySection />
 
       {/* Core Features */}
       <section className="border-t bg-muted/30 py-20 md:py-28">
