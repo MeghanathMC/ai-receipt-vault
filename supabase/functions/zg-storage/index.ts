@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// 0G Mainnet configuration
+// 0G Mainnet configuration (v2)
 const ZG_RPC_URL = "https://evmrpc.0g.ai";
 
 // Try turbo first, with standard as fallback
@@ -23,6 +23,193 @@ interface ProofJson {
   timestamp: string;
   prompt_hash: string;
   output_hash: string;
+}
+
+interface FileLocation {
+  url: string;
+  start: number;
+  end: number;
+}
+
+// Custom download function that uses HTTP fetch instead of filesystem
+async function downloadFromStorageNodes(rootHash: string): Promise<string> {
+  // First, get file locations from indexer
+  let fileLocations: FileLocation[] = [];
+  let lastError: Error | null = null;
+
+  for (const indexerRpc of INDEXER_ENDPOINTS) {
+    try {
+      console.log('Getting file locations from:', indexerRpc);
+      
+      // Get file locations via JSON-RPC
+      const locationsResponse = await fetch(indexerRpc, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'indexer_getFileLocations',
+          params: [rootHash],
+          id: Date.now()
+        })
+      });
+
+      if (!locationsResponse.ok) {
+        throw new Error(`HTTP ${locationsResponse.status}: ${await locationsResponse.text()}`);
+      }
+
+      const locationsData = await locationsResponse.json();
+      
+      if (locationsData.error) {
+        throw new Error(locationsData.error.message || JSON.stringify(locationsData.error));
+      }
+
+      if (!locationsData.result || locationsData.result.length === 0) {
+        throw new Error('No storage nodes found for this file');
+      }
+
+      fileLocations = locationsData.result;
+      console.log('Found', fileLocations.length, 'storage nodes');
+      break;
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e));
+      console.log('Indexer error on', indexerRpc, ':', lastError.message);
+    }
+  }
+
+  if (fileLocations.length === 0) {
+    throw lastError || new Error('Failed to get file locations');
+  }
+
+  // Try to download from storage nodes using JSON-RPC
+  for (const location of fileLocations) {
+    try {
+      const nodeUrl = location.url;
+      console.log('Downloading from storage node:', nodeUrl);
+
+      // Use zgs_downloadSegmentWithProof to get the data
+      // For small files (< 256KB), we only need segment 0
+      const segmentResponse = await fetch(nodeUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'zgs_downloadSegmentWithProof',
+          params: [rootHash, 0],
+          id: Date.now()
+        })
+      });
+
+      if (!segmentResponse.ok) {
+        throw new Error(`Segment HTTP ${segmentResponse.status}`);
+      }
+
+      const segmentData = await segmentResponse.json();
+      
+      if (segmentData.error) {
+        console.log('zgs_downloadSegmentWithProof error:', segmentData.error.message);
+        throw new Error(segmentData.error.message);
+      }
+
+      if (segmentData.result && segmentData.result.data) {
+        // Data is base64 encoded
+        const base64Data = segmentData.result.data;
+        const binaryString = atob(base64Data);
+        
+        // Find the actual JSON content (it might be padded)
+        // Look for the JSON structure
+        let content = '';
+        for (let i = 0; i < binaryString.length; i++) {
+          const char = binaryString[i];
+          if (char.charCodeAt(0) === 0) break; // Stop at null bytes
+          content += char;
+        }
+        
+        // Try to parse as JSON to verify
+        JSON.parse(content); // This will throw if invalid
+        console.log('Download successful from', nodeUrl, '- content length:', content.length);
+        return content;
+      }
+
+      throw new Error('No data in segment response');
+    } catch (e) {
+      console.log('Storage node download error:', e);
+      lastError = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+
+  // Fallback: try zgs_getFileInfo to get more details
+  for (const location of fileLocations) {
+    try {
+      const nodeUrl = location.url;
+      console.log('Trying getFileInfoByTxSeq from:', nodeUrl);
+
+      // First get file info
+      const fileInfoResponse = await fetch(nodeUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'zgs_getFileInfo',
+          params: [rootHash],
+          id: Date.now()
+        })
+      });
+
+      if (!fileInfoResponse.ok) {
+        throw new Error(`FileInfo HTTP ${fileInfoResponse.status}`);
+      }
+
+      const fileInfo = await fileInfoResponse.json();
+      if (fileInfo.error) {
+        throw new Error(fileInfo.error.message);
+      }
+
+      console.log('File info:', JSON.stringify(fileInfo.result));
+      
+      if (fileInfo.result && fileInfo.result.tx) {
+        const fileSize = fileInfo.result.tx.size;
+        console.log('File size from info:', fileSize);
+        
+        // Try downloading with size info
+        const chunkResponse = await fetch(nodeUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'zgs_downloadSegment',
+            params: [rootHash, 0, 1],
+            id: Date.now()
+          })
+        });
+
+        if (!chunkResponse.ok) {
+          throw new Error(`Chunk HTTP ${chunkResponse.status}`);
+        }
+
+        const chunkData = await chunkResponse.json();
+        if (chunkData.error) {
+          throw new Error(chunkData.error.message);
+        }
+
+        if (chunkData.result) {
+          const base64Data = chunkData.result;
+          const binaryString = atob(base64Data);
+          
+          // Trim to file size and decode
+          const trimmed = binaryString.substring(0, fileSize);
+          console.log('Chunk download successful, trimmed content length:', trimmed.length);
+          return trimmed;
+        }
+      }
+
+      throw new Error('Could not get file data');
+    } catch (e) {
+      console.log('Fallback download error:', e);
+      lastError = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+
+  throw lastError || new Error('Failed to download from all storage nodes');
 }
 
 serve(async (req) => {
@@ -137,7 +324,7 @@ serve(async (req) => {
       throw new Error(`All indexer endpoints failed. Last error: ${errorMessage}`);
 
     } else if (req.method === 'GET') {
-      // Download proof from 0G Storage
+      // Download proof from 0G Storage using custom HTTP-based download
       const url = new URL(req.url);
       const rootHash = url.searchParams.get('rootHash');
 
@@ -147,44 +334,19 @@ serve(async (req) => {
 
       console.log('Downloading proof from 0G Storage:', rootHash);
 
-      // Try each indexer endpoint for download
-      let lastError: unknown = null;
-      for (const indexerRpc of INDEXER_ENDPOINTS) {
-        try {
-          console.log('Trying download from:', indexerRpc);
-          const indexer = new Indexer(indexerRpc);
-          
-          const tempDownloadPath = `/tmp/download_${Date.now()}.json`;
-          const downloadError = await indexer.download(rootHash, tempDownloadPath, true);
+      // Use custom download function that works without filesystem
+      const fileContent = await downloadFromStorageNodes(rootHash);
+      const proof = JSON.parse(fileContent) as ProofJson;
+      
+      console.log('Download successful, proof receipt_hash:', proof.receipt_hash);
 
-          if (downloadError) {
-            lastError = downloadError;
-            console.log('Download error on', indexerRpc, ':', downloadError);
-            continue;
-          }
-
-          // Read the downloaded file
-          const fileContent = await Deno.readTextFile(tempDownloadPath);
-          await Deno.remove(tempDownloadPath);
-
-          const proof = JSON.parse(fileContent) as ProofJson;
-          console.log('Download successful via', indexerRpc);
-
-          return new Response(
-            JSON.stringify({ success: true, proof }),
-            { 
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-              status: 200 
-            }
-          );
-        } catch (e) {
-          lastError = e;
-          console.log('Download exception on', indexerRpc, ':', e);
+      return new Response(
+        JSON.stringify({ success: true, proof }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
         }
-      }
-
-      const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
-      throw new Error(`All indexer endpoints failed for download. Last error: ${errorMessage}`);
+      );
 
     } else {
       return new Response(
