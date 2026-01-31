@@ -329,7 +329,27 @@ serve(async (req) => {
       const rootHash = url.searchParams.get('rootHash');
 
       if (!rootHash) {
-        throw new Error('rootHash parameter is required');
+        return new Response(
+          JSON.stringify({ success: false, error: 'rootHash parameter is required' }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          },
+        );
+      }
+
+      // Prevent accidental calls with the literal route template value (":id")
+      if (rootHash.startsWith(':')) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'Invalid rootHash. Use the 0G Storage Root Hash from a real receipt (do not use "/verify/:id").',
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400,
+          },
+        );
       }
 
       console.log('Downloading proof from 0G Storage:', rootHash);
