@@ -4,19 +4,41 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { buildProofJson } from "@/lib/hash";
 import { uploadProofToZG } from "@/lib/zgStorage";
 import { ReceiptSuccess } from "@/components/ReceiptSuccess";
 import { Loader2 } from "lucide-react";
 
+const MODEL_OPTIONS = [
+  { value: "claude", label: "Claude" },
+  { value: "gpt-4", label: "GPT-4 / GPT-4o" },
+  { value: "gpt-3.5", label: "GPT-3.5" },
+  { value: "gemini", label: "Gemini" },
+  { value: "deepseek", label: "DeepSeek" },
+  { value: "llama", label: "LLaMA" },
+  { value: "mistral", label: "Mistral" },
+  { value: "qwen", label: "Qwen" },
+  { value: "other", label: "Other (custom)" },
+] as const;
+
 const formSchema = z.object({
   prompt: z.string().min(1, "Prompt is required").max(10000, "Prompt must be less than 10000 characters"),
-  model: z.string().min(1, "Model name is required").max(100, "Model name must be less than 100 characters"),
+  modelSelection: z.string().min(1, "Model is required"),
+  customModelName: z.string().max(100, "Model name must be less than 100 characters").optional(),
   output: z.string().min(1, "AI Output is required").max(50000, "Output must be less than 50000 characters"),
+}).refine((data) => {
+  if (data.modelSelection === "other") {
+    return data.customModelName && data.customModelName.trim().length > 0;
+  }
+  return true;
+}, {
+  message: "Please enter a custom model name",
+  path: ["customModelName"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -37,18 +59,26 @@ export function ReceiptForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       prompt: "",
-      model: "claude",
+      modelSelection: "claude",
+      customModelName: "",
       output: "",
     },
   });
+
+  const modelSelection = form.watch("modelSelection");
 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
       const timestamp = new Date().toISOString();
       
+      // Resolve the final model name
+      const finalModel = values.modelSelection === "other" 
+        ? values.customModelName! 
+        : values.modelSelection;
+      
       // Build the proof JSON with all hashes
-      const proof = await buildProofJson(values.prompt, values.model, values.output, timestamp);
+      const proof = await buildProofJson(values.prompt, finalModel, values.output, timestamp);
 
       // Upload to 0G Storage
       const { rootHash, txHash } = await uploadProofToZG(proof);
@@ -57,7 +87,7 @@ export function ReceiptForm() {
         rootHash, 
         receiptHash: proof.receipt_hash,
         txHash,
-        model: values.model,
+        model: finalModel,
         timestamp,
       });
       
@@ -126,17 +156,47 @@ export function ReceiptForm() {
 
             <FormField
               control={form.control}
-              name="model"
+              name="modelSelection"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Model Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., claude, gpt-4, gemini" {...field} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a model" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {MODEL_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Used only for receipt metadata. We do not call or verify the model.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {modelSelection === "other" && (
+              <FormField
+                control={form.control}
+                name="customModelName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Enter model name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., my-internal-llm" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
