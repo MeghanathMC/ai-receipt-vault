@@ -8,8 +8,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { computeReceiptHash } from "@/lib/hash";
+import { buildProofJson } from "@/lib/hash";
+import { uploadProofToZG } from "@/lib/zgStorage";
 import { ReceiptSuccess } from "@/components/ReceiptSuccess";
 import { Loader2 } from "lucide-react";
 
@@ -22,8 +22,9 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface CreatedReceipt {
-  id: string;
-  hash: string;
+  rootHash: string;
+  receiptHash: string;
+  txHash: string;
 }
 
 export function ReceiptForm() {
@@ -43,32 +44,28 @@ export function ReceiptForm() {
     setIsSubmitting(true);
     try {
       const timestamp = new Date().toISOString();
-      const hash = await computeReceiptHash(values.prompt, values.model, values.output, timestamp);
+      
+      // Build the proof JSON with all hashes
+      const proof = await buildProofJson(values.prompt, values.model, values.output, timestamp);
 
-      const { data, error } = await supabase
-        .from("receipts")
-        .insert({
-          prompt: values.prompt,
-          model: values.model,
-          output: values.output,
-          timestamp,
-          hash,
-        })
-        .select("id, hash")
-        .single();
+      // Upload to 0G Storage
+      const { rootHash, txHash } = await uploadProofToZG(proof);
 
-      if (error) throw error;
-
-      setCreatedReceipt({ id: data.id, hash: data.hash });
+      setCreatedReceipt({ 
+        rootHash, 
+        receiptHash: proof.receipt_hash,
+        txHash 
+      });
+      
       toast({
         title: "Receipt created",
-        description: "Your AI output receipt has been created successfully.",
+        description: "Your AI output proof has been stored on 0G decentralized storage.",
       });
     } catch (error) {
       console.error("Error creating receipt:", error);
       toast({
         title: "Error",
-        description: "Failed to create receipt. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to create receipt. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -82,7 +79,14 @@ export function ReceiptForm() {
   };
 
   if (createdReceipt) {
-    return <ReceiptSuccess id={createdReceipt.id} hash={createdReceipt.hash} onCreateAnother={handleReset} />;
+    return (
+      <ReceiptSuccess 
+        rootHash={createdReceipt.rootHash} 
+        receiptHash={createdReceipt.receiptHash}
+        txHash={createdReceipt.txHash}
+        onCreateAnother={handleReset} 
+      />
+    );
   }
 
   return (

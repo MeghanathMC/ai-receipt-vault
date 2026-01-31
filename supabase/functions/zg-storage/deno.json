@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@0glabs/0g-ts-sdk": "npm:@0glabs/0g-ts-sdk@^0.3.0",
+    "ethers": "npm:ethers@6.13.1"
+  }
+}
