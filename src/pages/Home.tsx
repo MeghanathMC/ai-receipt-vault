@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import { HeroSection } from "@/components/HeroSection";
 import { BrandSlider } from "@/components/BrandSlider";
+import { WhatItDoesSection } from "@/components/WhatItDoesSection";
 import { AiLogosBackground } from "@/components/AiLogosBackground";
 import {
   Accordion,
@@ -132,32 +133,8 @@ export default function Home() {
       {/* Brand Slider */}
       <BrandSlider />
 
-      {/* What Does This App Do */}
-      <section className="border-t bg-muted/30 py-20 md:py-28">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
-            What does this app do?
-          </h2>
-          <p className="mx-auto mt-6 max-w-2xl text-muted-foreground leading-relaxed">
-            ProofReceipt turns an AI response into something you can <strong className="text-foreground">prove</strong>, not
-            just claim.
-          </p>
-          <div className="mt-10 space-y-4 text-left max-w-xl mx-auto">
-            <p className="text-muted-foreground font-medium">When you create a receipt:</p>
-            <ul className="ml-6 list-disc space-y-2 text-muted-foreground">
-              <li>The app generates cryptographic hashes of the AI output</li>
-              <li>Stores only the proof on 0G Storage (mainnet)</li>
-              <li>Gives you a permanent verification link</li>
-            </ul>
-            <p className="mt-8 text-muted-foreground">
-              Later, anyone can verify the output independently.
-            </p>
-            <p className="font-medium text-foreground">
-              If the text changes even one character, verification fails.
-            </p>
-          </div>
-        </div>
-      </section>
+      {/* What Does This App Do - Bento Grid */}
+      <WhatItDoesSection />
 
       {/* How It Works */}
       <section className="border-t py-20 md:py-28">
