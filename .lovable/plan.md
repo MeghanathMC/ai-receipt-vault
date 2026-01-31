@@ -1,99 +1,154 @@
 
 
-# Model Dropdown with "Other (Custom)" Option
+# UI/UX Layout Refinement - Centered Expert Design
 
-This plan replaces the freeform text input for model selection with a dropdown containing common models, plus an "Other" option that reveals a custom text input.
-
----
-
-## Changes Overview
-
-### Form Schema Update
-Modify the Zod schema to handle both dropdown selection and custom model name:
-
-```typescript
-const formSchema = z.object({
-  prompt: z.string().min(1, "Prompt is required").max(10000),
-  modelSelection: z.string().min(1, "Model is required"),
-  customModelName: z.string().max(100).optional(),
-  output: z.string().min(1, "AI Output is required").max(50000),
-}).refine((data) => {
-  // If "other" selected, customModelName must be provided
-  if (data.modelSelection === "other") {
-    return data.customModelName && data.customModelName.length > 0;
-  }
-  return true;
-}, {
-  message: "Please enter a custom model name",
-  path: ["customModelName"],
-});
-```
+This plan reorganizes the existing content with professional UI/UX principles: improved visual hierarchy, better whitespace rhythm, refined typography scale, and a more polished centered layout.
 
 ---
 
-## Model Options
+## Overview
 
-| Value | Display Label |
-|-------|---------------|
-| `claude` | Claude |
-| `gpt-4` | GPT-4 / GPT-4o |
-| `gpt-3.5` | GPT-3.5 |
-| `gemini` | Gemini |
-| `deepseek` | DeepSeek |
-| `llama` | LLaMA |
-| `mistral` | Mistral |
-| `qwen` | Qwen |
-| `other` | Other (custom) |
+The current layout is functional but can benefit from:
+- **Better vertical rhythm** with consistent spacing
+- **Improved visual hierarchy** through typography and section contrast
+- **Tighter content width** for better readability (max-w-3xl for text-heavy sections)
+- **Enhanced section separation** with subtle visual breaks
+- **Refined feature cards** with better alignment and hover states
+- **Polished navigation** with better brand emphasis
 
 ---
 
-## UI Implementation
+## Changes by File
 
-### Dropdown Field
-Replace the current `Input` with a `Select` component:
+### 1. `src/pages/Home.tsx`
 
+**Hero Section Improvements:**
+- Increase top padding for stronger visual opening
+- Add a subtle tagline separator for visual rhythm
+- Improve CTA button prominence with added whitespace
+
+**Section Layout Refinements:**
+- Reduce max-width for text-heavy sections to `max-w-3xl` for optimal line length (45-75 characters)
+- Use consistent `py-20 md:py-28` for section padding (more breathing room)
+- Add `text-center` alignment for key sections with icons
+
+**"How It Works" Section:**
+- Convert to numbered step cards with visual indicators
+- Add subtle background to Create/Verify columns for distinction
+
+**Feature Cards Grid:**
+- Add hover effects for interactivity feedback
+- Center-align card content for cleaner presentation
+- Improve icon sizing and color emphasis
+
+**FAQ Section:**
+- Limit accordion width for better readability
+- Add subtle divider between questions
+
+**Closing CTA:**
+- Add more visual weight with subtle background
+- Increase spacing around final call-to-action
+
+---
+
+### 2. `src/components/Navigation.tsx`
+
+**Brand Refinement:**
+- Slightly larger logo icon for better visibility
+- Add subtle hover state to navigation links
+
+---
+
+### 3. `src/components/ReceiptForm.tsx` (Create page)
+
+**Form Layout Polish:**
+- Add subtle shadow to card for depth
+- Improve card header spacing
+- Add visual hierarchy between form sections
+
+---
+
+### 4. `src/index.css`
+
+**Global Refinements:**
+- Add smooth scroll behavior for anchor links
+- Ensure consistent focus states
+- Add subtle transition utilities
+
+---
+
+## Visual Hierarchy Improvements
+
+| Element | Current | Improved |
+|---------|---------|----------|
+| Hero padding | `py-16 md:py-24` | `py-20 md:py-32` |
+| Section padding | `py-16` | `py-20 md:py-28` |
+| Text max-width | `max-w-4xl` | `max-w-3xl` for text, `max-w-4xl` for grids |
+| Section titles | `text-2xl md:text-3xl` | `text-2xl md:text-3xl` centered |
+| Feature cards | Basic border | Subtle shadow + hover transform |
+
+---
+
+## Typography Scale (No Changes to Fonts)
+
+Keeping Playfair Display for headings and Inter for body, but with refined application:
+
+| Use | Font | Weight |
+|-----|------|--------|
+| Hero title | Playfair Display | Bold (700) |
+| Section headings | Playfair Display | Semibold (600) |
+| Card titles | Inter | Semibold (600) |
+| Body text | Inter | Regular (400) |
+| Captions/labels | Inter | Medium (500) |
+
+---
+
+## Section-by-Section Layout
+
+### Hero
 ```text
-Model Name (dropdown)
-[Claude              ▼]
-
-Used only for receipt metadata.
-We do not call or verify the model.
+                    [Logo in Nav]
+                         |
+              --------- py-32 ---------
+              |                       |
+              |     ProofReceipt      |  <- font-heading, text-5xl
+              |                       |
+              |  Verifiable.Immutable |  <- font-heading, text-xl
+              |                       |
+              |   Problem statement   |  <- max-w-2xl centered
+              |                       |
+              |    [Create Button]    |
+              |                       |
+              -------------------------
 ```
 
-### Conditional Custom Input
-When "Other (custom)" is selected, show an additional text input below:
-
+### Content Sections
 ```text
-Model Name (dropdown)
-[Other (custom)      ▼]
-
-Enter model name
-[my-internal-llm    ]
+              --------- py-24 ---------
+              |                       |
+              | [Section Icon]        |
+              | Section Title         |  <- centered, font-heading
+              |                       |
+              |    Content here...    |  <- max-w-3xl for readability
+              |                       |
+              -------------------------
 ```
 
----
-
-## Logic Changes in onSubmit
-
-Resolve the final model string before building the proof:
-
-```typescript
-const finalModel = values.modelSelection === "other" 
-  ? values.customModelName 
-  : values.modelSelection;
-
-const proof = await buildProofJson(values.prompt, finalModel, values.output, timestamp);
+### Feature Grid
+```text
+              --------- py-24 ---------
+              |                       |
+              |    Core Features      |
+              |                       |
+              | +-----+ +-----+ +-----+|
+              | |Card | |Card | |Card ||  <- 3-column grid
+              | +-----+ +-----+ +-----+|
+              | +-----+ +-----+ +-----+|
+              | |Card | |Card | |Card ||
+              | +-----+ +-----+ +-----+|
+              |                       |
+              -------------------------
 ```
-
-The stored proof JSON will contain the actual model name (e.g., "claude", "gpt-4", or "my-internal-llm").
-
----
-
-## Components Used
-
-- `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` from `@/components/ui/select`
-- `Input` for custom model name (already imported)
-- `FormDescription` for the microcopy
 
 ---
 
@@ -101,16 +156,19 @@ The stored proof JSON will contain the actual model name (e.g., "claude", "gpt-4
 
 | File | Changes |
 |------|---------|
-| `src/components/ReceiptForm.tsx` | Add Select component, conditional custom input, update schema, resolve model in onSubmit |
+| `src/pages/Home.tsx` | Section padding, text width, card styling, visual hierarchy |
+| `src/components/Navigation.tsx` | Logo size, link hover states |
+| `src/components/ReceiptForm.tsx` | Card shadow, spacing refinements |
+| `src/index.css` | Smooth scroll, global transitions |
 
 ---
 
-## Why This Approach
+## Key UX Principles Applied
 
-1. **Model-agnostic**: Shows the app works for any AI model
-2. **Future-proof**: "Other" option means no need to update for new models
-3. **Simple**: No validation, no API calls, just metadata
-4. **Judge-friendly**: Demonstrates vendor-neutral design philosophy
-
-The microcopy "Used only for receipt metadata. We do not call or verify the model." makes it clear this is a receipt system, not an inference engine.
+1. **F-pattern reading** - Important content on left, CTAs centered
+2. **Whitespace rhythm** - Consistent spacing creates visual calm
+3. **Progressive disclosure** - FAQ accordion, collapsible metadata
+4. **Visual grouping** - Related content in cards/sections
+5. **Clear hierarchy** - Size and weight indicate importance
+6. **Scannable content** - Headers, bullets, and icons for quick reading
 
