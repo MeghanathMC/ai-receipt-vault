@@ -7,13 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// 0G Galileo Testnet configuration
-const ZG_RPC_URL = "https://evmrpc-testnet.0g.ai";
+// 0G Mainnet configuration
+const ZG_RPC_URL = "https://evmrpc.0g.ai";
 
 // Try turbo first, with standard as fallback
 const INDEXER_ENDPOINTS = [
-  "https://indexer-storage-testnet-turbo.0g.ai",
-  "https://indexer-storage-testnet-standard.0g.ai"
+  "https://indexer-storage-turbo.0g.ai",
+  "https://indexer-storage.0g.ai"
 ];
 
 interface ProofJson {
