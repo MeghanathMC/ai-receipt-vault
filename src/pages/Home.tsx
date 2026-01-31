@@ -3,6 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   FileCheck,
   Shield,
   AlertTriangle,
@@ -65,6 +71,49 @@ const audiences = [
   {
     icon: Users,
     text: 'Teams resolving "what did the model say?" disputes',
+  },
+];
+
+const faqs = [
+  {
+    question: "Is my AI prompt or output stored anywhere?",
+    answer:
+      "No. ProofReceipt never stores the actual text of your prompt or output. Only a cryptographic hash (a unique fingerprint) is stored on 0G Storage. The original content stays private with you.",
+  },
+  {
+    question: "What is 0G Storage?",
+    answer:
+      "0G is a decentralized storage network. When you create a receipt, the proof is stored on 0G's mainnet, making it immutable and publicly verifiable without relying on any single company or server.",
+  },
+  {
+    question: "Do I need a crypto wallet to use ProofReceipt?",
+    answer:
+      "No. ProofReceipt handles all blockchain interactions behind the scenes. You just paste your content and get a verification link—no wallet, no gas fees, no crypto knowledge required.",
+  },
+  {
+    question: "How does verification work?",
+    answer:
+      "When someone visits your verification link, they can re-enter the original prompt and output. ProofReceipt hashes it again and compares it to the stored proof. If they match, it's verified. If even one character is different, it fails.",
+  },
+  {
+    question: "Can I verify content without sharing the original text?",
+    answer:
+      "Yes—that's the point. The verification link only contains the proof. To verify, someone must have the original content. This means you control who can verify, and the content itself is never exposed on-chain.",
+  },
+  {
+    question: "How long do receipts last?",
+    answer:
+      "Receipts are stored permanently on 0G Storage. As long as the network exists, your proofs remain accessible and verifiable.",
+  },
+  {
+    question: "Is ProofReceipt free to use?",
+    answer:
+      "Yes, creating and verifying receipts is free. The storage costs on 0G are covered by the app.",
+  },
+  {
+    question: "Can I use this for non-AI content?",
+    answer:
+      "While ProofReceipt is designed for AI outputs, the underlying technology works for any text. You could use it to timestamp and prove any written content.",
   },
 ];
 
@@ -244,8 +293,29 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Closing */}
+      {/* FAQ Section */}
       <section className="border-t bg-muted/30 py-16">
+        <div className="mx-auto max-w-4xl px-4">
+          <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
+            Frequently asked questions
+          </h2>
+          <Accordion type="single" collapsible className="mt-8 w-full">
+            {faqs.map((faq, index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="text-left font-medium text-foreground">
+                  {faq.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">
+                  {faq.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
+      {/* Closing */}
+      <section className="border-t py-16">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
             Proof, not trust.
