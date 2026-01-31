@@ -126,14 +126,14 @@ export function ReceiptForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <CardTitle>Create Receipt</CardTitle>
-        <CardDescription>
+    <Card className="w-full max-w-2xl shadow-sm border-border/50">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-2xl">Create Receipt</CardTitle>
+        <CardDescription className="text-base">
           Generate a verifiable receipt for an AI output by hashing the prompt, model, output, and timestamp.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField

@@ -123,152 +123,169 @@ export default function Home() {
       <Navigation />
 
       {/* Hero Section */}
-      <section className="mx-auto max-w-4xl px-4 py-16 text-center md:py-24">
-        <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground md:text-6xl">
+      <section className="mx-auto max-w-3xl px-6 py-20 text-center md:py-32">
+        <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground md:text-5xl lg:text-6xl">
           ProofReceipt
         </h1>
-        <p className="mt-4 font-heading text-xl text-muted-foreground md:text-2xl">
-          Receipts for AI outputs.
-          <br />
-          <span className="text-foreground">Verifiable. Immutable. Private.</span>
-        </p>
-        <p className="mx-auto mt-8 max-w-2xl text-muted-foreground">
+        <div className="mx-auto mt-6 flex items-center justify-center gap-2 text-muted-foreground">
+          <span className="h-px w-8 bg-border" />
+          <p className="font-heading text-lg text-foreground md:text-xl">
+            Verifiable · Immutable · Private
+          </p>
+          <span className="h-px w-8 bg-border" />
+        </div>
+        <p className="mx-auto mt-8 max-w-2xl text-muted-foreground leading-relaxed">
           AI answers are easy to generate. They're also easy to edit, fake, or dispute.
-          <br className="hidden md:block" />
           ProofReceipt creates a cryptographic receipt for any AI output, so anyone can later
           verify that it hasn't been changed.
         </p>
         <p className="mt-6 text-sm text-muted-foreground">
-          No accounts. No wallets. No raw content stored on-chain.
+          No accounts · No wallets · No raw content stored on-chain
         </p>
-        <Button asChild size="lg" className="mt-8">
+        <Button asChild size="lg" className="mt-10">
           <Link to="/create">Create a Receipt</Link>
         </Button>
       </section>
 
       {/* What Does This App Do */}
-      <section className="border-t bg-muted/30 py-16">
-        <div className="mx-auto max-w-4xl px-4">
+      <section className="border-t bg-muted/30 py-20 md:py-28">
+        <div className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
             What does this app do?
           </h2>
-          <p className="mt-4 text-muted-foreground">
-            ProofReceipt turns an AI response into something you can <strong>prove</strong>, not
+          <p className="mx-auto mt-6 max-w-2xl text-muted-foreground leading-relaxed">
+            ProofReceipt turns an AI response into something you can <strong className="text-foreground">prove</strong>, not
             just claim.
           </p>
-          <div className="mt-8 space-y-4 text-muted-foreground">
-            <p>When you create a receipt:</p>
-            <ul className="ml-6 list-disc space-y-2">
+          <div className="mt-10 space-y-4 text-left max-w-xl mx-auto">
+            <p className="text-muted-foreground font-medium">When you create a receipt:</p>
+            <ul className="ml-6 list-disc space-y-2 text-muted-foreground">
               <li>The app generates cryptographic hashes of the AI output</li>
               <li>Stores only the proof on 0G Storage (mainnet)</li>
               <li>Gives you a permanent verification link</li>
             </ul>
-            <p className="mt-6">
+            <p className="mt-8 text-muted-foreground">
               Later, anyone can verify the output independently.
-              <br />
-              <strong>If the text changes even one character, verification fails.</strong>
+            </p>
+            <p className="font-medium text-foreground">
+              If the text changes even one character, verification fails.
             </p>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="border-t py-16">
-        <div className="mx-auto max-w-4xl px-4">
-          <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
+      <section className="border-t py-20 md:py-28">
+        <div className="mx-auto max-w-4xl px-6">
+          <h2 className="font-heading text-2xl font-semibold text-foreground text-center md:text-3xl">
             How it works
           </h2>
-          <div className="mt-8 grid gap-8 md:grid-cols-2">
-            <div>
-              <h3 className="font-semibold text-foreground">Create</h3>
-              <ol className="mt-4 ml-6 list-decimal space-y-2 text-muted-foreground">
-                <li>Paste an AI prompt and output</li>
-                <li>The app hashes the content with a timestamp</li>
-                <li>Only the hash and metadata are stored on 0G</li>
-                <li>A receipt link is generated</li>
-              </ol>
-            </div>
-            <div>
-              <h3 className="font-semibold text-foreground">Verify</h3>
-              <ol className="mt-4 ml-6 list-decimal space-y-2 text-muted-foreground">
-                <li>The content is hashed again</li>
-                <li>Compared against the immutable proof on 0G</li>
-                <li>
-                  <strong>Match</strong> = verified
-                </li>
-                <li>
-                  <strong>Mismatch</strong> = modified
-                </li>
-              </ol>
-            </div>
+          <div className="mt-12 grid gap-8 md:grid-cols-2">
+            <Card className="bg-card border-border/50">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">1</span>
+                  <h3 className="font-semibold text-foreground text-lg">Create</h3>
+                </div>
+                <ol className="ml-11 list-decimal space-y-2 text-muted-foreground text-sm">
+                  <li>Paste an AI prompt and output</li>
+                  <li>The app hashes the content with a timestamp</li>
+                  <li>Only the hash and metadata are stored on 0G</li>
+                  <li>A receipt link is generated</li>
+                </ol>
+              </CardContent>
+            </Card>
+            <Card className="bg-card border-border/50">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">2</span>
+                  <h3 className="font-semibold text-foreground text-lg">Verify</h3>
+                </div>
+                <ol className="ml-11 list-decimal space-y-2 text-muted-foreground text-sm">
+                  <li>The content is hashed again</li>
+                  <li>Compared against the immutable proof on 0G</li>
+                  <li><strong className="text-foreground">Match</strong> = verified</li>
+                  <li><strong className="text-foreground">Mismatch</strong> = modified</li>
+                </ol>
+              </CardContent>
+            </Card>
           </div>
-          <p className="mt-8 text-center font-heading text-lg font-medium text-foreground">
+          <p className="mt-12 text-center font-heading text-lg font-medium text-foreground">
             No trust. Only math.
           </p>
         </div>
       </section>
 
       {/* Why This Matters */}
-      <section className="border-t bg-muted/30 py-16">
-        <div className="mx-auto max-w-4xl px-4">
+      <section className="border-t bg-muted/30 py-20 md:py-28">
+        <div className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
             Why this matters
           </h2>
-          <p className="mt-4 text-muted-foreground">AI is already used for:</p>
-          <ul className="mt-4 ml-6 list-disc space-y-1 text-muted-foreground">
-            <li>Assignments</li>
-            <li>Reports</li>
-            <li>Research summaries</li>
-            <li>Internal documents</li>
-          </ul>
-          <p className="mt-6 text-muted-foreground">But today there's no way to prove:</p>
-          <ul className="mt-4 ml-6 list-disc space-y-1 text-muted-foreground">
-            <li>What the AI originally said</li>
-            <li>When it was generated</li>
-            <li>Whether it was edited later</li>
-          </ul>
-          <p className="mt-6 font-medium text-foreground">
+          <div className="mt-10 grid gap-8 md:grid-cols-2 text-left max-w-2xl mx-auto">
+            <div>
+              <p className="font-medium text-foreground mb-3">AI is already used for:</p>
+              <ul className="ml-6 list-disc space-y-1.5 text-muted-foreground text-sm">
+                <li>Assignments</li>
+                <li>Reports</li>
+                <li>Research summaries</li>
+                <li>Internal documents</li>
+              </ul>
+            </div>
+            <div>
+              <p className="font-medium text-foreground mb-3">But today there's no way to prove:</p>
+              <ul className="ml-6 list-disc space-y-1.5 text-muted-foreground text-sm">
+                <li>What the AI originally said</li>
+                <li>When it was generated</li>
+                <li>Whether it was edited later</li>
+              </ul>
+            </div>
+          </div>
+          <p className="mt-10 font-medium text-foreground text-lg">
             ProofReceipt solves this by giving AI outputs a verifiable history.
           </p>
         </div>
       </section>
 
       {/* Privacy-First */}
-      <section className="border-t py-16">
-        <div className="mx-auto max-w-4xl px-4">
-          <div className="flex items-center gap-3">
+      <section className="border-t py-20 md:py-28">
+        <div className="mx-auto max-w-3xl px-6 text-center">
+          <div className="flex items-center justify-center gap-3">
             <Lock className="h-6 w-6 text-primary" />
             <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
               Privacy-first by design
             </h2>
           </div>
-          <p className="mt-4 text-muted-foreground">ProofReceipt never stores:</p>
-          <ul className="mt-4 ml-6 list-disc space-y-1 text-muted-foreground">
-            <li>The full AI prompt</li>
-            <li>The output text</li>
-            <li>Any personal or sensitive data</li>
-          </ul>
-          <p className="mt-6 text-muted-foreground">
-            Only cryptographic hashes are written to 0G Storage.
-            <br />
-            <strong>This allows verification without exposing content.</strong>
-          </p>
+          <div className="mt-10 max-w-xl mx-auto text-left">
+            <p className="text-muted-foreground mb-4">ProofReceipt never stores:</p>
+            <ul className="ml-6 list-disc space-y-1.5 text-muted-foreground">
+              <li>The full AI prompt</li>
+              <li>The output text</li>
+              <li>Any personal or sensitive data</li>
+            </ul>
+            <p className="mt-8 text-muted-foreground">
+              Only cryptographic hashes are written to 0G Storage.
+            </p>
+            <p className="font-medium text-foreground mt-2">
+              This allows verification without exposing content.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* Core Features */}
-      <section className="border-t bg-muted/30 py-16">
-        <div className="mx-auto max-w-4xl px-4">
-          <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
+      <section className="border-t bg-muted/30 py-20 md:py-28">
+        <div className="mx-auto max-w-4xl px-6">
+          <h2 className="font-heading text-2xl font-semibold text-foreground text-center md:text-3xl">
             Core features
           </h2>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
-              <Card key={feature.title} className="border bg-card">
-                <CardContent className="flex flex-col gap-2 p-5">
-                  <feature.icon className="h-5 w-5 text-primary" />
+              <Card key={feature.title} className="border-border/50 bg-card transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+                <CardContent className="flex flex-col items-center gap-3 p-6 text-center">
+                  <feature.icon className="h-6 w-6 text-primary" />
                   <h3 className="font-semibold text-foreground">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -277,15 +294,17 @@ export default function Home() {
       </section>
 
       {/* Who Is This For */}
-      <section className="border-t py-16">
-        <div className="mx-auto max-w-4xl px-4">
+      <section className="border-t py-20 md:py-28">
+        <div className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
             Who is this for?
           </h2>
-          <ul className="mt-8 space-y-4">
+          <ul className="mt-10 space-y-4 max-w-md mx-auto">
             {audiences.map((audience) => (
-              <li key={audience.text} className="flex items-center gap-3 text-muted-foreground">
-                <audience.icon className="h-5 w-5 text-primary" />
+              <li key={audience.text} className="flex items-center gap-4 text-muted-foreground text-left">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                  <audience.icon className="h-5 w-5 text-primary" />
+                </div>
                 <span>{audience.text}</span>
               </li>
             ))}
@@ -294,18 +313,18 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="border-t bg-muted/30 py-16">
-        <div className="mx-auto max-w-4xl px-4">
-          <h2 className="font-heading text-2xl font-semibold text-foreground md:text-3xl">
+      <section className="border-t bg-muted/30 py-20 md:py-28">
+        <div className="mx-auto max-w-3xl px-6">
+          <h2 className="font-heading text-2xl font-semibold text-foreground text-center md:text-3xl">
             Frequently asked questions
           </h2>
-          <Accordion type="single" collapsible className="mt-8 w-full">
+          <Accordion type="single" collapsible className="mt-12 w-full max-w-2xl mx-auto">
             {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger className="text-left font-medium text-foreground">
+              <AccordionItem key={index} value={`item-${index}`} className="border-border/50">
+                <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline py-5">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">
+                <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -315,25 +334,25 @@ export default function Home() {
       </section>
 
       {/* Closing */}
-      <section className="border-t py-16">
-        <div className="mx-auto max-w-4xl px-4 text-center">
+      <section className="border-t py-20 md:py-28">
+        <div className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-heading text-3xl font-bold text-foreground md:text-4xl">
             Proof, not trust.
           </h2>
-          <p className="mt-4 text-muted-foreground">
+          <p className="mt-6 text-muted-foreground leading-relaxed">
             AI outputs shouldn't be screenshots or claims.
             <br />
             They should be verifiable.
           </p>
-          <p className="mt-2 font-medium text-foreground">ProofReceipt makes that possible.</p>
-          <Button asChild size="lg" className="mt-8">
+          <p className="mt-3 font-medium text-foreground text-lg">ProofReceipt makes that possible.</p>
+          <Button asChild size="lg" className="mt-10">
             <Link to="/create">Create a Receipt</Link>
           </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">
+      <footer className="border-t py-10 text-center text-sm text-muted-foreground">
         <p>© {new Date().getFullYear()} ProofReceipt. Built on 0G Storage.</p>
       </footer>
     </div>
