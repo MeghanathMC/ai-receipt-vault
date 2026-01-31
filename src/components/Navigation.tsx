@@ -5,13 +5,21 @@ export function Navigation() {
   return (
     <nav className="border-b bg-background">
       <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-        <NavLink to="/" className="flex items-center gap-2 font-semibold text-foreground">
+        <NavLink to="/" className="flex items-center gap-2 font-heading font-semibold text-foreground">
           <FileCheck className="h-5 w-5 text-primary" />
-          <span>AI Output Receipt</span>
+          <span>ProofReceipt</span>
         </NavLink>
         <div className="flex items-center gap-4">
           <NavLink
             to="/"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            activeClassName="text-foreground font-medium"
+            end
+          >
+            Home
+          </NavLink>
+          <NavLink
+            to="/create"
             className="text-sm text-muted-foreground transition-colors hover:text-foreground"
             activeClassName="text-foreground font-medium"
           >
