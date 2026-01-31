@@ -2,13 +2,6 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 
-const floatingIcons = [
-  { icon: "🤖", label: "ChatGPT", position: { x: "8%", y: "25%" } },
-  { icon: "🧠", label: "Claude", position: { x: "12%", y: "65%" } },
-  { icon: "✨", label: "Gemini", position: { x: "85%", y: "20%" } },
-  { icon: "🦙", label: "Llama", position: { x: "88%", y: "60%" } },
-];
-
 export function HeroSection() {
   return (
     <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
@@ -22,33 +15,6 @@ export function HeroSection() {
           }}
         />
       </div>
-
-      {/* Floating AI Icons */}
-      {floatingIcons.map((item, index) => (
-        <motion.div
-          key={item.label}
-          className="absolute hidden md:flex flex-col items-center gap-2"
-          style={{ left: item.position.x, top: item.position.y }}
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 + index * 0.15, duration: 0.5 }}
-        >
-          <motion.div
-            className="w-14 h-14 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 flex items-center justify-center text-2xl shadow-lg"
-            animate={{ y: [0, -10, 0] }}
-            transition={{
-              duration: 3 + index * 0.5,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          >
-            {item.icon}
-          </motion.div>
-          <span className="text-xs text-muted-foreground font-medium">
-            {item.label}
-          </span>
-        </motion.div>
-      ))}
 
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-3xl px-6 text-center">
