@@ -1,137 +1,116 @@
 
-# ProofReceipt Landing Page Implementation
 
-This plan creates a comprehensive landing page that explains the value proposition of ProofReceipt, with a clear path to the receipt creation functionality.
+# Model Dropdown with "Other (Custom)" Option
 
----
-
-## Overview
-
-The current app shows the receipt form immediately on the home page. This plan introduces a proper landing page with all the sections you provided, moving the receipt creation to a dedicated `/create` route.
+This plan replaces the freeform text input for model selection with a dropdown containing common models, plus an "Other" option that reveals a custom text input.
 
 ---
 
-## Route Structure Changes
+## Changes Overview
 
-| Route | Current | New |
-|-------|---------|-----|
-| `/` | CreateReceipt | **Home** (landing page) |
-| `/create` | - | **CreateReceipt** (form) |
-| `/verify/:id` | VerifyReceipt | VerifyReceipt (unchanged) |
+### Form Schema Update
+Modify the Zod schema to handle both dropdown selection and custom model name:
+
+```typescript
+const formSchema = z.object({
+  prompt: z.string().min(1, "Prompt is required").max(10000),
+  modelSelection: z.string().min(1, "Model is required"),
+  customModelName: z.string().max(100).optional(),
+  output: z.string().min(1, "AI Output is required").max(50000),
+}).refine((data) => {
+  // If "other" selected, customModelName must be provided
+  if (data.modelSelection === "other") {
+    return data.customModelName && data.customModelName.length > 0;
+  }
+  return true;
+}, {
+  message: "Please enter a custom model name",
+  path: ["customModelName"],
+});
+```
 
 ---
 
-## New Files to Create
+## Model Options
 
-### 1. `src/pages/Home.tsx`
-The main landing page containing all sections:
+| Value | Display Label |
+|-------|---------------|
+| `claude` | Claude |
+| `gpt-4` | GPT-4 / GPT-4o |
+| `gpt-3.5` | GPT-3.5 |
+| `gemini` | Gemini |
+| `deepseek` | DeepSeek |
+| `llama` | LLaMA |
+| `mistral` | Mistral |
+| `qwen` | Qwen |
+| `other` | Other (custom) |
 
-**Hero Section**
-- Large "ProofReceipt" heading (Playfair Display)
-- Tagline: "Receipts for AI outputs. Verifiable. Immutable. Private."
-- Problem statement about AI outputs being easy to fake
-- CTA button: "Create a Receipt" linking to `/create`
+---
 
-**What Does This App Do Section**
-- Explanation of turning AI responses into provable receipts
-- Step-by-step: hash generation, 0G storage, verification link
+## UI Implementation
 
-**How It Works Section**
-- Two-column layout or numbered steps
-- Creation flow and verification flow
-- "No trust. Only math." closing statement
+### Dropdown Field
+Replace the current `Input` with a `Select` component:
 
-**Why This Matters Section**
-- Use cases: assignments, reports, research, documents
-- Problems solved: proving original content, timestamp, edits
+```text
+Model Name (dropdown)
+[Claude              ▼]
 
-**Privacy-First Section**
-- What is NOT stored (prompt, output, personal data)
-- Only cryptographic hashes on 0G
-- "Verification without exposing content"
+Used only for receipt metadata.
+We do not call or verify the model.
+```
 
-**Core Features Section**
-- 6 feature cards in a grid:
-  - AI Output Receipts
-  - Independent Verification
-  - Tamper Detection
-  - 0G Storage (Mainnet)
-  - No Wallet Required
-  - Proof Export
+### Conditional Custom Input
+When "Other (custom)" is selected, show an additional text input below:
 
-**Who Is This For Section**
-- Audience list: Students, Companies, Researchers, Teams
+```text
+Model Name (dropdown)
+[Other (custom)      ▼]
 
-**Closing Section**
-- "Proof, not trust."
-- Final CTA button
+Enter model name
+[my-internal-llm    ]
+```
+
+---
+
+## Logic Changes in onSubmit
+
+Resolve the final model string before building the proof:
+
+```typescript
+const finalModel = values.modelSelection === "other" 
+  ? values.customModelName 
+  : values.modelSelection;
+
+const proof = await buildProofJson(values.prompt, finalModel, values.output, timestamp);
+```
+
+The stored proof JSON will contain the actual model name (e.g., "claude", "gpt-4", or "my-internal-llm").
+
+---
+
+## Components Used
+
+- `Select`, `SelectTrigger`, `SelectValue`, `SelectContent`, `SelectItem` from `@/components/ui/select`
+- `Input` for custom model name (already imported)
+- `FormDescription` for the microcopy
 
 ---
 
 ## Files to Modify
 
-### 2. `src/App.tsx`
-- Import new `Home` component
-- Add route: `/` for Home
-- Change CreateReceipt route to `/create`
-
-### 3. `src/components/Navigation.tsx`
-- Update brand name to "ProofReceipt"
-- Add navigation links:
-  - "Home" linking to `/`
-  - "Create" linking to `/create`
+| File | Changes |
+|------|---------|
+| `src/components/ReceiptForm.tsx` | Add Select component, conditional custom input, update schema, resolve model in onSubmit |
 
 ---
 
-## Component Structure
+## Why This Approach
 
-```text
-Home.tsx
-  |-- HeroSection
-  |-- WhatItDoesSection
-  |-- HowItWorksSection
-  |-- WhyItMattersSection
-  |-- PrivacySection
-  |-- FeaturesSection (6 cards)
-  |-- AudienceSection
-  |-- ClosingSection
-```
+1. **Model-agnostic**: Shows the app works for any AI model
+2. **Future-proof**: "Other" option means no need to update for new models
+3. **Simple**: No validation, no API calls, just metadata
+4. **Judge-friendly**: Demonstrates vendor-neutral design philosophy
 
-All sections will be implemented as part of the single Home.tsx file to keep things simple, using semantic section elements.
+The microcopy "Used only for receipt metadata. We do not call or verify the model." makes it clear this is a receipt system, not an inference engine.
 
----
-
-## Technical Details
-
-### Typography Usage
-- `font-heading` (Playfair Display): Main headings, section titles, brand name
-- `font-sans` (Inter): Body text, descriptions, feature cards
-
-### Icons (from lucide-react)
-- `FileCheck` - Receipts
-- `Shield` - Verification
-- `AlertTriangle` - Tamper Detection
-- `Database` - 0G Storage
-- `Wallet` - No Wallet
-- `Download` - Proof Export
-- `Lock` - Privacy
-
-### Styling Approach
-- Consistent with existing "Minimal and Clean" design
-- White background, subtle borders, professional spacing
-- Max width containers matching existing `max-w-4xl` pattern
-- Responsive grid layouts for features
-
-### Button Navigation
-- Primary CTA uses `Link` from react-router-dom
-- Styled with existing `Button` component
-
----
-
-## Files Summary
-
-| File | Action |
-|------|--------|
-| `src/pages/Home.tsx` | Create new |
-| `src/App.tsx` | Modify routes |
-| `src/components/Navigation.tsx` | Update links and brand |
